@@ -2,7 +2,6 @@ package org.tobiaszpietryga.kafka_producer.sevice;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,7 +11,7 @@ import org.tobiaszpietryga.kafka_producer.model.Status;
 
 @Service
 @RequiredArgsConstructor
-public class OrderService {
+public class PaymentService {
 	private final KafkaTemplate<Long, Order> kafkaTemplate;
 	private final AtomicLong idGenerator = new AtomicLong();
 

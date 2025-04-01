@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.tobiaszpietryga</groupId>
-	<artifactId>kafka-producer</artifactId>
+	<artifactId>payment-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>kafka-producer</name>
-	<description>Kafka producer</description>
+	<name>Payment Service</name>
+	<description>Payment Service</description>
 	<url/>
 	<licenses>
 		<license/>
