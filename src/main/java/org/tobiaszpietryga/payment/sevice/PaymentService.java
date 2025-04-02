@@ -28,8 +28,8 @@ public class PaymentService {
 			log.info("Found customer: {}", customer);
 			if (order.getPrice().compareTo(customer.getAmountAvailable()) <= 0) {
 				order.setStatus(Status.PARTIALLY_CONFIRMED);
-				customer.setAmountReserved(customer.getAmountReserved().add(order.getPrice()));
-				customer.setAmountAvailable(customer.getAmountAvailable().subtract(order.getPrice()));
+				customer.setAmountReserved(customer.getAmountReserved() + order.getPrice());
+				customer.setAmountAvailable(customer.getAmountAvailable() - order.getPrice());
 				customerRepository.save(customer);
 				order.setPaymentStarted(true);
 			} else {

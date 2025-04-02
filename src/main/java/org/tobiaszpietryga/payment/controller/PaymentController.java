@@ -19,6 +19,6 @@ public class PaymentController {
 	@PostMapping
 	public void makeOrder(@RequestBody String orderName) {
 		logger.info("Received an orderName {}", orderName);
-		orderService.sendOrder(orderName);
+		orderService.reservePayment(orderName);
 	}
 }
