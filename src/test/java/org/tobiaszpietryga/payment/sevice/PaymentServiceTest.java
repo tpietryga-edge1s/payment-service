@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.tobiaszpietryga.order.common.model.Order;
+import org.tobiaszpietryga.order.common.model.Status;
 import org.tobiaszpietryga.payment.doman.Customer;
 import org.tobiaszpietryga.payment.repository.CustomerRepository;
 
@@ -59,6 +60,7 @@ class PaymentServiceTest {
 		Mockito.verify(kafkaTemplate).send(TOPIC_NAME, 1L, orderCaptor.capture());
 		Order sentOrder = orderCaptor.getValue();
 		Assertions.assertThat(sentOrder.isPaymentStarted()).isTrue();
+		Assertions.assertThat(sentOrder.getStatus()).isEqualTo(Status.PARTIALLY_CONFIRMED);
 
 		Mockito.verify(customerRepository).save(customerCaptor.capture());
 		Customer savedCustomer = customerCaptor.getValue();
