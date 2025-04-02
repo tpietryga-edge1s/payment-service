@@ -1,4 +1,6 @@
-spring.application.name: payment-service
+spring:
+  application:
+    name: payment-service
 
 spring.kafka:
   bootstrap-servers: 172.21.129.192:9092
