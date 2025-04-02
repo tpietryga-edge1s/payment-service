@@ -22,7 +22,7 @@ import org.tobiaszpietryga.payment.repository.CustomerRepository;
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
 
-	public static final String TOPIC_NAME = "payment-orders";
+	public static final String PAYMENT_ORDERS = "payment-orders";
 	@Mock
 	KafkaTemplate<Long, Order> kafkaTemplate;
 	@InjectMocks
@@ -42,29 +42,88 @@ class PaymentServiceTest {
 	@Test
 	void shouldReservePayment_whenNoPendingPaymentIsPresent() {
 		//given
-		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(Customer.builder()
-				.amountAvailable(10)
-				.amountReserved(0)
-				.id(1L)
-				.build());
-		ReflectionTestUtils.setField(underTest, "topicName", TOPIC_NAME);
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(20, 0));
+		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
 
 		//when
-		underTest.reservePayment(Order.builder()
-				.id(1L)
-				.customerId(1L)
-				.price(4)
-				.build());
+		underTest.reservePayment(prepareOrder(Status.NEW, false, 4));
 
 		//then
-		Mockito.verify(kafkaTemplate).send(TOPIC_NAME, 1L, orderCaptor.capture());
-		Order sentOrder = orderCaptor.getValue();
-		Assertions.assertThat(sentOrder.isPaymentStarted()).isTrue();
-		Assertions.assertThat(sentOrder.getStatus()).isEqualTo(Status.PARTIALLY_CONFIRMED);
+		assertOrderSentToKafka(Status.PARTIALLY_CONFIRMED, Boolean.TRUE);
 
+		assertCustomerAmounts(16, 4);
+	}
+
+	@Test
+	void shouldRejectPayment_whenNoPendingPaymentIsPresent() {
+		//given
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(20, 0));
+		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
+
+		//when
+		underTest.reservePayment(prepareOrder(Status.NEW, false, 25));
+
+		//then
+		assertOrderSentToKafka(Status.PARTIALLY_REJECTED, Boolean.FALSE);
+
+		assertCustomerAmounts(16, 4);
+	}
+
+	private void assertOrderSentToKafka(Status status, Boolean paymentStarted) {
+		Mockito.verify(kafkaTemplate).send(PAYMENT_ORDERS, 1L, orderCaptor.capture());
+		Order sentOrder = orderCaptor.getValue();
+		Assertions.assertThat(sentOrder.isPaymentStarted()).isEqualTo(paymentStarted);
+		Assertions.assertThat(sentOrder.getStatus()).isEqualTo(status);
+	}
+
+	@Test
+	void shouldConfirmPayment_whenNoPendingPaymentIsPresent() {
+		//given
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(16, 4));
+		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
+
+		//when
+		underTest.confirmPayment(prepareOrder(Status.CONFIRMED, true, 4));
+
+		//then
+		assertCustomerAmounts(16, 0);
+	}
+
+	@Test
+	void shouldRollbackPayment_whenNoPendingPaymentIsPresent() {
+		//given
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(16, 4));
+		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
+
+		//when
+		underTest.confirmPayment(prepareOrder(Status.ROLLBACK, true, 4));
+
+		//then
+		assertCustomerAmounts(20, 0);
+	}
+
+	private void assertCustomerAmounts(int availableAmount, int reservedAmount) {
 		Mockito.verify(customerRepository).save(customerCaptor.capture());
 		Customer savedCustomer = customerCaptor.getValue();
-		Assertions.assertThat(savedCustomer.getAmountAvailable()).isEqualTo(6);
-		Assertions.assertThat(savedCustomer.getAmountReserved()).isEqualTo(4);
+		Assertions.assertThat(savedCustomer.getAmountAvailable()).isEqualTo(availableAmount);
+		Assertions.assertThat(savedCustomer.getAmountReserved()).isEqualTo(reservedAmount);
+	}
+
+	private static Order prepareOrder(Status status, boolean paymentStarted, int price) {
+		return Order.builder()
+				.id(1L)
+				.status(status)
+				.customerId(1L)
+				.paymentStarted(paymentStarted)
+				.price(price)
+				.build();
+	}
+
+	private static Customer prepareCustomer(int amountAvailable, int amountReserved) {
+		return Customer.builder()
+				.amountAvailable(amountAvailable)
+				.amountReserved(amountReserved)
+				.id(1L)
+				.build();
 	}
 }
