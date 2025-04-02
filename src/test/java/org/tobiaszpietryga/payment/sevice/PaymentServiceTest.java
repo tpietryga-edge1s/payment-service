@@ -79,7 +79,7 @@ class PaymentServiceTest {
 		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
 
 		//when
-		underTest.confirmPayment(prepareOrder(Status.CONFIRMED, true, 4));
+		underTest.confirmOrRollbackPayment(prepareOrder(Status.CONFIRMED, true, 4));
 
 		//then
 		assertCustomerAmounts(16, 0);
@@ -92,7 +92,7 @@ class PaymentServiceTest {
 		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
 
 		//when
-		underTest.confirmPayment(prepareOrder(Status.ROLLBACK, true, 4));
+		underTest.confirmOrRollbackPayment(prepareOrder(Status.ROLLBACK, true, 4));
 
 		//then
 		assertCustomerAmounts(20, 0);
