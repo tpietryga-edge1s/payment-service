@@ -19,6 +19,9 @@ import org.tobiaszpietryga.order.common.model.Status;
 import org.tobiaszpietryga.payment.doman.Customer;
 import org.tobiaszpietryga.payment.repository.CustomerRepository;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
 
@@ -42,7 +45,7 @@ class PaymentServiceTest {
 	@Test
 	void shouldReservePayment_whenNoPendingPaymentIsPresent() {
 		//given
-		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(20, 0));
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(20, 0)));
 		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
 
 		//when
@@ -57,7 +60,7 @@ class PaymentServiceTest {
 	@Test
 	void shouldRejectPayment_whenNoPendingPaymentIsPresent() {
 		//given
-		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(20, 0));
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(20, 0)));
 		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
 
 		//when
@@ -66,20 +69,13 @@ class PaymentServiceTest {
 		//then
 		assertOrderSentToKafka(Status.PARTIALLY_REJECTED, Boolean.FALSE);
 
-		assertCustomerAmounts(16, 4);
-	}
-
-	private void assertOrderSentToKafka(Status status, Boolean paymentStarted) {
-		Mockito.verify(kafkaTemplate).send(PAYMENT_ORDERS, 1L, orderCaptor.capture());
-		Order sentOrder = orderCaptor.getValue();
-		Assertions.assertThat(sentOrder.isPaymentStarted()).isEqualTo(paymentStarted);
-		Assertions.assertThat(sentOrder.getStatus()).isEqualTo(status);
+		Mockito.verify(customerRepository, Mockito.never()).save(any());
 	}
 
 	@Test
 	void shouldConfirmPayment_whenNoPendingPaymentIsPresent() {
 		//given
-		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(16, 4));
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(16, 4)));
 		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
 
 		//when
@@ -92,7 +88,7 @@ class PaymentServiceTest {
 	@Test
 	void shouldRollbackPayment_whenNoPendingPaymentIsPresent() {
 		//given
-		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(16, 4));
+		Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(prepareCustomer(16, 4)));
 		ReflectionTestUtils.setField(underTest, "topicName", PAYMENT_ORDERS);
 
 		//when
@@ -125,5 +121,12 @@ class PaymentServiceTest {
 				.amountReserved(amountReserved)
 				.id(1L)
 				.build();
+	}
+
+	private void assertOrderSentToKafka(Status status, Boolean paymentStarted) {
+		Mockito.verify(kafkaTemplate).send(eq(PAYMENT_ORDERS), eq(1L), orderCaptor.capture());
+		Order sentOrder = orderCaptor.getValue();
+		Assertions.assertThat(sentOrder.isPaymentStarted()).isEqualTo(paymentStarted);
+		Assertions.assertThat(sentOrder.getStatus()).isEqualTo(status);
 	}
 }
