@@ -1,4 +1,4 @@
-package org.tobiaszpietryga.kafka_producer.controller;
+package org.tobiaszpietryga.payment.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.tobiaszpietryga.kafka_producer.sevice.PaymentService;
+import org.tobiaszpietryga.payment.sevice.PaymentService;
 
 @RestController
 @RequestMapping("orders")

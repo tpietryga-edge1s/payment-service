@@ -1,4 +1,4 @@
-package org.tobiaszpietryga.kafka_producer.sevice;
+package org.tobiaszpietryga.payment.sevice;
 
 import java.util.concurrent.atomic.AtomicLong;
 

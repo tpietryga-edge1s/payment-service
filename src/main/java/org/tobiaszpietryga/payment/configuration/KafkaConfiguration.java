@@ -1,4 +1,4 @@
-package org.tobiaszpietryga.kafka_producer.configuration;
+package org.tobiaszpietryga.payment.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
