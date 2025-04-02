@@ -1,5 +1,7 @@
 package org.tobiaszpietryga.payment.doman;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,7 +26,7 @@ public class Customer {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
-	private int amountAvailable;
-	private int amountReserved;
+	private BigDecimal amountAvailable;
+	private BigDecimal amountReserved;
 
 }

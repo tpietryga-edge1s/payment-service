@@ -19,7 +19,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.tobiaszpietryga.kafka_producer.model.Order;
+import org.tobiaszpietryga.order.common.model.Order;
 
 @Configuration
 public class KafkaConfiguration {

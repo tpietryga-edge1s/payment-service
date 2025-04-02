@@ -1,24 +1,43 @@
 package org.tobiaszpietryga.payment.sevice;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.tobiaszpietryga.kafka_producer.model.Order;
-import org.tobiaszpietryga.kafka_producer.model.Status;
+import org.tobiaszpietryga.order.common.model.Order;
+import org.tobiaszpietryga.order.common.model.Status;
+import org.tobiaszpietryga.payment.doman.Customer;
+import org.tobiaszpietryga.payment.repository.CustomerRepository;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
+	private final CustomerRepository customerRepository;
 	private final KafkaTemplate<Long, Order> kafkaTemplate;
-	private final AtomicLong idGenerator = new AtomicLong();
+	@Value("${payment-orders.topic.name}")
+	private String topicName;
 
-	@Value("${orders.topic.name}")
-	private String ordersTopicName;
-	public void sendOrder(String orderName) {
-		Order newOrder = Order.builder().id(idGenerator.incrementAndGet()).name(orderName).status(Status.NEW).build();
-		kafkaTemplate.send("orders", newOrder.getId(), newOrder);
+	public void reservePayment(Order order) {
+		Optional<Customer> possibleCustomer = customerRepository.findById(order.getCustomerId());
+		if (possibleCustomer.isPresent()) {
+			Customer customer = possibleCustomer.get();
+			log.info("Found customer: {}", customer);
+			if (order.getPrice().compareTo(customer.getAmountAvailable()) <= 0) {
+				order.setStatus(Status.PARTIALLY_CONFIRMED);
+				customer.setAmountReserved(customer.getAmountReserved().add(order.getPrice()));
+				customer.setAmountAvailable(customer.getAmountAvailable().subtract(order.getPrice()));
+				customerRepository.save(customer);
+				order.setPaymentStarted(true);
+			} else {
+				order.setStatus(Status.PARTIALLY_REJECTED);
+			}
+		} else {
+			order.setStatus(Status.PARTIALLY_REJECTED);
+		}
+		kafkaTemplate.send(topicName, order.getId(), order);
 	}
 }
