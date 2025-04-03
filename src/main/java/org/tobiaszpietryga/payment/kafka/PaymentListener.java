@@ -13,7 +13,7 @@ import org.tobiaszpietryga.payment.sevice.PaymentService;
 @Service
 public class PaymentListener {
 	private final PaymentService paymentService;
-	@KafkaListener(id = "orders", topics = "${orders.topic.name}", groupId = "payment")
+	@KafkaListener(id = "payment-service-order-listener", topics = "${orders.topic.name}", groupId = "payment-service-order-listener")
 	public void onEvent(Order order) {
 		log.info("Received: {}", order);
 		if (order.getStatus().equals(Status.NEW)) {
