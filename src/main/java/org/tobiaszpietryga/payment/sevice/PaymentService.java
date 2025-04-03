@@ -53,10 +53,14 @@ public class PaymentService {
 				customerRepository.save(customer);
 				log.info("Confirm: confirm: customer saved{}", customer);
 			} else if (order.getStatus().equals(Status.ROLLBACK)) {
-				customer.setAmountReserved(customer.getAmountReserved() - order.getPrice());
-				customer.setAmountAvailable(customer.getAmountAvailable() + order.getPrice());
-				customerRepository.save(customer);
-				log.info("Confirm: rollback: customer saved{}", customer);
+				if (order.isPaymentStarted()) {
+					customer.setAmountReserved(customer.getAmountReserved() - order.getPrice());
+					customer.setAmountAvailable(customer.getAmountAvailable() + order.getPrice());
+					customerRepository.save(customer);
+					log.info("Confirm: rollback: customer saved{}", customer);
+				} else {
+					log.info("Confirm: rollback ignored");
+				}
 			} else {
 				log.warn("Confirm: incorrect order status: {}", order.getStatus());
 			}
